@@ -9,6 +9,7 @@ namespace FlightManagementSystem.Controllers
         public IActionResult Index()
         {
             return View();
+          
         }
 
         public IActionResult Privacy()
