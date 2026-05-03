@@ -1,0 +1,31 @@
+@model FlightManagementSystem.Models.Flight
+
+@{
+    ViewData["Title"] = "Flight Details";
+}
+
+<h2>Flight Details</h2>
+
+<div class="card p-4" style="max-width: 600px;">
+    <h4>Flight @Model.FlightNumber</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-4">From</dt>
+        <dd class="col-sm-8">@Model.Source</dd>
+
+        <dt class="col-sm-4">To</dt>
+        <dd class="col-sm-8">@Model.Destination</dd>
+
+        <dt class="col-sm-4">Departure</dt>
+        <dd class="col-sm-8">@Model.DepartureTime.ToString("dd MMM yyyy HH:mm")</dd>
+
+        <dt class="col-sm-4">Arrival</dt>
+        <dd class="col-sm-8">@Model.ArrivalTime.ToString("dd MMM yyyy HH:mm")</dd>
+
+        <dt class="col-sm-4">Capacity</dt>
+        <dd class="col-sm-8">@Model.Capacity seats</dd>
+    </dl>
+
+    <a asp-action="Index" class="btn btn-outline-secondary me-2">Back to Flights</a>
+    <a asp-controller="Reservation" asp-action="Create" asp-route-flightNumber="@Model.FlightNumber" class="btn btn-primary">Book This Flight</a>
+</div>
