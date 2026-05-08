@@ -1,8 +1,31 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome to my first .NET sdsdfsd APP</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="text-center py-5">
+    <h1 class="display-4 fw-bold">✈️ Flight Management System</h1>
+    <p class="lead text-muted">Search and book flights quickly and easily.</p>
+    <a asp-controller="Flight" asp-action="Index" class="btn btn-primary btn-lg mt-3">Search Flights</a>
 </div>
+
+<hr />
+
+<div class="row text-center mt-4">
+    <div class="col-md-4">
+        <div class="card p-4 mb-3">
+            <h3>✈️</h3>
+            <h5>Search Flights</h5>
+            <p class="text-muted">Find available flights by origin, destination and date.</p>
+            <a asp-controller="Flight" asp-action="Index" class="btn btn-outline-primary">Search Now</a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-4 mb-3">
+            <h3>🎫</h3>
+            <h5>Book a Seat</h5>
+            <p class="text-muted">Reserve your seat and complete your booking in minutes.</p>
+            <a asp-controller="Flight" asp-action="Index" class="btn btn-outline-primary">Book Now</a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-4 mb-
