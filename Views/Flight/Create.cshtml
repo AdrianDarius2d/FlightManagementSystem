@@ -1,0 +1,92 @@
+@model FlightManagementSystem.Models.Flight
+@{
+    ViewData["Title"] = "Add New Flight";
+}
+
+<h2>✈️ Add New Flight</h2>
+<hr />
+
+<div class="row">
+    <div class="col-md-7">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="mb-3">
+                <label asp-for="FlightNumber" class="form-label fw-semibold"></label>
+                <input asp-for="FlightNumber" class="form-control" placeholder="e.g. BTA006" />
+                <span asp-validation-for="FlightNumber" class="text-danger"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Source" class="form-label fw-semibold"></label>
+                    <input asp-for="Source" class="form-control" placeholder="Departure city" />
+                    <span asp-validation-for="Source" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Destination" class="form-label fw-semibold"></label>
+                    <input asp-for="Destination" class="form-control" placeholder="Arrival city" />
+                    <span asp-validation-for="Destination" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="DepartureTime" class="form-label fw-semibold"></label>
+                    <input asp-for="DepartureTime" class="form-control" type="datetime-local" />
+                    <span asp-validation-for="DepartureTime" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="ArrivalTime" class="form-label fw-semibold"></label>
+                    <input asp-for="ArrivalTime" class="form-control" type="datetime-local" />
+                    <span asp-validation-for="ArrivalTime" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label asp-for="Capacity" class="form-label fw-semibold"></label>
+                    <input asp-for="Capacity" class="form-control" type="number" min="1" max="1000" />
+                    <span asp-validation-for="Capacity" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label asp-for="Price" class="form-label fw-semibold"></label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input asp-for="Price" class="form-control" type="number" step="0.01" min="0.01" />
+                    </div>
+                    <span asp-validation-for="Price" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label asp-for="Status" class="form-label fw-semibold"></label>
+                    <select asp-for="Status" class="form-select">
+                        <option value="Scheduled">Scheduled</option>
+                        <option value="Delayed">Delayed</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="AircraftType" class="form-label fw-semibold"></label>
+                <select asp-for="AircraftType" class="form-select">
+                    <option>Boeing 737</option>
+                    <option>Boeing 777</option>
+                    <option>Boeing 787</option>
+                    <option>Airbus A320</option>
+                    <option>Airbus A330</option>
+                    <option>Airbus A380</option>
+                </select>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success">Create Flight</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

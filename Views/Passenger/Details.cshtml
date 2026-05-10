@@ -1,0 +1,84 @@
+@model FlightManagementSystem.Models.Passenger
+@{
+    ViewData["Title"] = "Passenger – " + Model.FullName;
+    var activeReservations = Model.Reservations?.Where(r => r.Status == "Confirmed").ToList() ?? new();
+}
+
+<h2>👤 @Model.FullName</h2>
+<hr />
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-dark text-white">Personal Details</div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-5">First Name</dt>
+                    <dd class="col-sm-7">@Model.FirstName</dd>
+
+                    <dt class="col-sm-5">Last Name</dt>
+                    <dd class="col-sm-7">@Model.LastName</dd>
+
+                    <dt class="col-sm-5">Email</dt>
+                    <dd class="col-sm-7">@Model.Email</dd>
+
+                    <dt class="col-sm-5">Phone</dt>
+                    <dd class="col-sm-7">@Model.Phone</dd>
+
+                    <dt class="col-sm-5">Address</dt>
+                    <dd class="col-sm-7">@Model.Address</dd>
+
+                    <dt class="col-sm-5">Passport ID</dt>
+                    <dd class="col-sm-7"><code>@Model.PassportId</code></dd>
+
+                    <dt class="col-sm-5">Active Bookings</dt>
+                    <dd class="col-sm-7">
+                        <span class="badge bg-primary">@activeReservations.Count</span>
+                    </dd>
+                </dl>
+            </div>
+        </div>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-secondary me-2">Edit</a>
+        <a asp-action="Index" class="btn btn-outline-primary">← All Passengers</a>
+    </div>
+
+    <div class="col-md-7">
+        <h5>Reservation History</h5>
+        @if (Model.Reservations == null || !Model.Reservations.Any())
+        {
+            <p class="text-muted">No reservations found.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-sm table-hover shadow-sm">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th>#</th>
+                            <th>Flight</th>
+                            <th>Route</th>
+                            <th>Class</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in Model.Reservations.OrderByDescending(r => r.Date))
+                        {
+                            <tr>
+                                <td>@r.Id</td>
+                                <td>@r.FlightId</td>
+                                <td>@r.Flight?.Source → @r.Flight?.Destination</td>
+                                <td>@r.ClassType</td>
+                                <td>
+                                    <span class="badge @(r.Status == "Confirmed" ? "bg-success" : "bg-secondary")">
+                                        @r.Status
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

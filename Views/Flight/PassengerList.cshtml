@@ -1,0 +1,70 @@
+@model FlightManagementSystem.Models.Flight
+@{
+    ViewData["Title"] = $"Passenger List – {Model.FlightNumber}";
+    var activeReservations = Model.Reservations?.Where(r => r.Status != "Cancelled").ToList() ?? new();
+}
+
+<h2>🧾 Passenger List — Flight @Model.FlightNumber</h2>
+<p class="text-muted">@Model.Source → @Model.Destination | @Model.DepartureTime.ToString("dd MMM yyyy HH:mm")</p>
+
+<div class="mb-3">
+    <span class="badge bg-primary fs-6">@activeReservations.Count confirmed out of @Model.Capacity seats</span>
+</div>
+
+@if (!activeReservations.Any())
+{
+    <div class="alert alert-info">No passengers booked on this flight yet.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped shadow-sm">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Passenger</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Class</th>
+                    <th>Reservation Date</th>
+                    <th>Status</th>
+                    <th>Payment</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ int row = 1; }
+                @foreach (var r in activeReservations)
+                {
+                    <tr>
+                        <td>@(row++)</td>
+                        <td>@r.Passenger?.FullName</td>
+                        <td>@r.Passenger?.Email</td>
+                        <td>@r.Passenger?.Phone</td>
+                        <td>@r.ClassType</td>
+                        <td>@r.Date.ToString("dd MMM yyyy")</td>
+                        <td>
+                            <span class="badge @(r.Status == "Confirmed" ? "bg-success" : "bg-secondary")">
+                                @r.Status
+                            </span>
+                        </td>
+                        <td>
+                            @if (r.Payment != null)
+                            {
+                                <span class="badge bg-success">Paid $@r.Payment.Amount.ToString("F2")</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<div class="mt-3 d-flex gap-2">
+    <a asp-action="Details" asp-route-id="@Model.FlightNumber" class="btn btn-outline-secondary">← Back to Flight</a>
+    <a asp-action="Index" class="btn btn-outline-primary">All Flights</a>
+</div>

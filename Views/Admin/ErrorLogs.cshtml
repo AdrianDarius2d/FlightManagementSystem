@@ -1,0 +1,95 @@
+@model IEnumerable<FlightManagementSystem.Models.ErrorLog>
+@{
+    ViewData["Title"] = "System Error Logs";
+    var unread = (int)ViewBag.UnacknowledgedCount;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>
+        🚨 System Error Logs
+        @if (unread > 0)
+        {
+            <span class="badge bg-danger">@unread new</span>
+        }
+    </h2>
+    <small class="text-muted">REQ-68, REQ-69 | @Model.Count() total errors</small>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-success">✅ No system errors recorded. The system is operating normally.</div>
+}
+else
+{
+    <div class="table-responsive shadow-sm">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Severity</th>
+                    <th>Message</th>
+                    <th>Path</th>
+                    <th>User</th>
+                    <th>IP</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var err in Model)
+                {
+                    <tr class="@(!err.IsAcknowledged ? "table-danger" : "table-secondary text-muted")">
+                        <td><small>@err.Timestamp.ToString("dd MMM HH:mm:ss")</small></td>
+                        <td>
+                            <span class="badge @(err.Severity == "Critical" ? "bg-danger" : err.Severity == "Warning" ? "bg-warning text-dark" : "bg-secondary")">
+                                @err.Severity
+                            </span>
+                        </td>
+                        <td>
+                            <small>@err.Message</small>
+                            @if (!string.IsNullOrEmpty(err.StackTrace))
+                            {
+                                <br />
+                                <button class="btn btn-link btn-sm p-0" type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#trace-@err.Id">
+                                    Show trace
+                                </button>
+                                <div class="collapse" id="trace-@err.Id">
+                                    <pre class="small text-muted mt-1" style="max-height:120px;overflow:auto">@err.StackTrace</pre>
+                                </div>
+                            }
+                        </td>
+                        <td><small class="text-muted">@(err.HttpMethod) @err.RequestPath</small></td>
+                        <td><small>@(err.UserId ?? "Guest")</small></td>
+                        <td><small>@(err.IpAddress ?? "-")</small></td>
+                        <td>
+                            @if (err.IsAcknowledged)
+                            {
+                                <span class="badge bg-secondary">Acknowledged</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">New</span>
+                            }
+                        </td>
+                        <td>
+                            @if (!err.IsAcknowledged)
+                            {
+                                <form asp-action="AcknowledgeError" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@err.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">✔ Acknowledge</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<div class="mt-3 d-flex gap-2">
+    <a asp-action="Index" class="btn btn-outline-secondary">← Dashboard</a>
+    <button onclick="window.print()" class="btn btn-outline-dark">🖨️ Print</button>
+</div>

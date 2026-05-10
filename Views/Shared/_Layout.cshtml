@@ -1,54 +1,201 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - FlightManagementSystem</title>
+    <title>@ViewData["Title"] - Bermuda Triangle Airlines</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/FlightManagementSystem.styles.css" asp-append-version="true" />
+    <style>
+        body { background-color: #f8f9fa; }
+        .navbar-brand { font-weight: 700; letter-spacing: -0.5px; }
+        .nav-link { font-weight: 500; }
+        .error-badge { font-size: 0.6rem; top: 2px; right: 2px; }
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">FlightManagementSystem</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Flight" asp-action="Index">Flights</a>
-                        </li>
-                    </ul>
-                    <partial name="_LoginPartial" />
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - FlightManagementSystem - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+@* REQ-70, REQ-78: Maintenance mode banner *@
+@if (ViewBag.MaintenanceModeActive == true)
+{
+    <div class="alert alert-warning text-center mb-0 rounded-0 py-2">
+        🔧 <strong>System Maintenance:</strong> Some features may be temporarily unavailable.
+        We apologise for any inconvenience.
+    </div>
+}
+
+<header>
+    <nav class="navbar navbar-expand-sm navbar-dark bg-dark shadow-sm mb-3">
+        <div class="container-fluid">
+            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                ✈️ Bermuda Triangle Airlines
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target=".navbar-collapse" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                <ul class="navbar-nav flex-grow-1">
+
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Flight" asp-action="Index">✈️ Flights</a>
+                    </li>
+
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Reservation" asp-action="Index">🎫 My Bookings</a>
+                        </li>
+                    }
+
+                    @* Staff and Admin management menu *@
+                    @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                Management
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-dark">
+                                <li><h6 class="dropdown-header">Flights</h6></li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Flight" asp-action="Index">All Flights</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Flight" asp-action="Create">+ Add Flight</a>
+                                </li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li><h6 class="dropdown-header">People</h6></li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Passenger" asp-action="Index">Passengers</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Reservation" asp-action="All">All Reservations</a>
+                                </li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li><h6 class="dropdown-header">Finance</h6></li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Payment" asp-action="AllTransactions">Transactions</a>
+                                </li>
+                            </ul>
+                        </li>
+                    }
+
+                    @* Admin-only menu covering REQ-62 to REQ-80 *@
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                🛠️ Admin
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-dark">
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Admin" asp-action="Index">Dashboard</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Admin" asp-action="Reports">📊 Reports</a>
+                                </li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li><h6 class="dropdown-header">Users &amp; Security (REQ-67, REQ-72)</h6></li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Admin" asp-action="Users">User Management</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Admin" asp-action="Settings">⚙️ System Settings</a>
+                                </li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li><h6 class="dropdown-header">Monitoring (REQ-63, REQ-68, REQ-73)</h6></li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Admin" asp-action="ActivityLogs">📋 Audit Logs</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Admin" asp-action="ErrorLogs">🚨 Error Logs</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Admin" asp-action="SystemHealth">🩺 System Health</a>
+                                </li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li><h6 class="dropdown-header">Data Management (REQ-54 to REQ-61)</h6></li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Admin" asp-action="Backup">🗄️ Backup &amp; Restore</a>
+                                </li>
+                            </ul>
+                        </li>
+                    }
+                </ul>
+
+                <ul class="navbar-nav">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Notification" asp-action="Index" title="Notifications">
+                                🔔 Alerts
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Passenger" asp-action="MyProfile" title="My Profile">
+                                👤 Profile
+                            </a>
+                        </li>
+                    }
+                    <partial name="_LoginPartial" />
+                </ul>
+            </div>
         </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+    </nav>
+</header>
+
+<div class="container">
+    @* Global feedback messages (TempData) *@
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Info"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            @TempData["Info"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <main role="main" class="pb-4">
+        @RenderBody()
+    </main>
+</div>
+
+<footer class="border-top footer text-muted mt-4 py-3 bg-white shadow-sm">
+    <div class="container d-flex justify-content-between align-items-center">
+        <span>&copy; 2026 Bermuda Triangle Airlines</span>
+        <span>
+            <a asp-controller="Home" asp-action="Privacy" class="text-muted text-decoration-none me-3">Privacy Policy</a>
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-controller="Admin" asp-action="SystemHealth" class="text-muted text-decoration-none">System Health</a>
+            }
+        </span>
+    </div>
+</footer>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

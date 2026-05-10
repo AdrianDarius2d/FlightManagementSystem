@@ -1,61 +1,113 @@
 @model IEnumerable<FlightManagementSystem.Models.Flight>
-
 @{
     ViewData["Title"] = "Search Flights";
 }
 
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2><span class="text-primary">✈️</span> Search Flights</h2>
+    @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+    {
+        <a asp-action="Create" class="btn btn-success">+ Add New Flight</a>
+    }
+</div>
 
-
-<h2>Search Flights</h2>
-
-<form method="get" class="row g-3 mb-4">
-    <div class="col-md-3">
-        <input type="text" name="source" class="form-control" placeholder="From" />
-    </div>
-    <div class="col-md-3">
-        <input type="text" name="destination" class="form-control" placeholder="To" />
-    </div>
-    <div class="col-md-3">
-        <input type="date" name="date" class="form-control" />
-    </div>
-    <div class="col-md-3">
-        <button type="submit" class="btn btn-primary w-100">Search</button>
+<form method="get" class="card p-3 mb-4 shadow-sm">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-2">
+            <label class="form-label fw-semibold">From</label>
+            <input type="text" name="source" class="form-control" placeholder="City" value="@ViewBag.Source" />
+        </div>
+        <div class="col-md-2">
+            <label class="form-label fw-semibold">To</label>
+            <input type="text" name="destination" class="form-control" placeholder="City" value="@ViewBag.Destination" />
+        </div>
+        <div class="col-md-2">
+            <label class="form-label fw-semibold">Date</label>
+            <input type="date" name="date" class="form-control" value="@ViewBag.Date" />
+        </div>
+        @* REQ-33: Search by flight number *@
+        <div class="col-md-2">
+            <label class="form-label fw-semibold">Flight No.</label>
+            <input type="text" name="flightNumber" class="form-control" placeholder="e.g. BTA001" value="@ViewBag.FlightNumber" />
+        </div>
+        @* REQ-35: Sort results *@
+        <div class="col-md-2">
+            <label class="form-label fw-semibold">Sort by</label>
+            <select name="sortBy" class="form-select">
+                <option value="">Departure ↑</option>
+                <option value="price"      selected="@(ViewBag.SortBy == "price")">Price ↑</option>
+                <option value="price_desc" selected="@(ViewBag.SortBy == "price_desc")">Price ↓</option>
+                <option value="arrival"    selected="@(ViewBag.SortBy == "arrival")">Arrival ↑</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-1">
+            <button type="submit" class="btn btn-primary flex-grow-1">🔍 Search</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">✕</a>
+        </div>
     </div>
 </form>
 
-@if (!Model.Any())
+@* REQ-36: show message when no results found *@
+@if (ViewBag.NoResults == true)
 {
-    <p>No flights found. Try different search criteria.</p>
+    <div class="alert alert-info">
+        No flights found matching your search. Try different filters or
+        <a asp-action="Index" class="alert-link">clear all filters</a>.
+    </div>
 }
 else
 {
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Flight No.</th>
-                <th>From</th>
-                <th>To</th>
-                <th>Departure</th>
-                <th>Arrival</th>
-                <th>Capacity</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var flight in Model)
-            {
+    <div class="table-responsive">
+        <table class="table table-hover align-middle shadow-sm">
+            <thead class="table-dark">
                 <tr>
-                    <td>@flight.FlightNumber</td>
-                    <td>@flight.Source</td>
-                    <td>@flight.Destination</td>
-                    <td>@flight.DepartureTime.ToString("dd MMM yyyy HH:mm")</td>
-                    <td>@flight.ArrivalTime.ToString("dd MMM yyyy HH:mm")</td>
-                    <td>@flight.Capacity</td>
-                    <td>
-                        <a asp-action="Details" asp-route-id="@flight.FlightNumber" class="btn btn-sm btn-outline-primary">View</a>
-                    </td>
+                    <th>Flight #</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Departure</th>
+                    <th>Arrival</th>
+                    <th>Aircraft</th>
+                    <th>Price (Eco)</th>
+                    <th>Availability</th>
+                    <th>Status</th>
+                    <th></th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var flight in Model)
+                {
+                    <tr>
+                        <td><strong>@flight.FlightNumber</strong></td>
+                        <td>@flight.Source</td>
+                        <td>@flight.Destination</td>
+                        <td>@flight.DepartureTime.ToString("dd MMM yyyy HH:mm")</td>
+                        <td>@flight.ArrivalTime.ToString("dd MMM yyyy HH:mm")</td>
+                        <td><small class="text-muted">@flight.AircraftType</small></td>
+                        <td class="text-success fw-bold">$@flight.Price.ToString("F2")</td>
+                        <td>
+                            <span class="badge @(flight.AvailableSeats > 10 ? "bg-success" : flight.AvailableSeats > 0 ? "bg-warning text-dark" : "bg-danger")">
+                                @flight.AvailableSeats / @flight.Capacity
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge @(flight.Status == "Scheduled" ? "bg-primary" : flight.Status == "Delayed" ? "bg-warning text-dark" : "bg-danger")">
+                                @flight.Status
+                            </span>
+                        </td>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@flight.FlightNumber"
+                               class="btn btn-sm btn-outline-primary me-1">View</a>
+                            @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+                            {
+                                <a asp-action="Edit" asp-route-id="@flight.FlightNumber"
+                                   class="btn btn-sm btn-outline-secondary me-1">Edit</a>
+                                <a asp-action="PassengerList" asp-route-id="@flight.FlightNumber"
+                                   class="btn btn-sm btn-outline-info">Pax</a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }

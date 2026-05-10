@@ -1,0 +1,55 @@
+@model IEnumerable<FlightManagementSystem.Models.Payment>
+@{
+    ViewData["Title"] = "All Transactions";
+    var total = Model.Where(p => p.Status == "Completed").Sum(p => p.Amount);
+}
+
+<h2>💰 Payment Transactions</h2>
+<p class="text-muted">
+    Total revenue: <strong class="text-success">$@total.ToString("F2")</strong>
+    from @Model.Count(p => p.Status == "Completed") completed transactions.
+</p>
+<hr />
+
+<div class="table-responsive">
+    <table class="table table-hover shadow-sm align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Transaction ID</th>
+                <th>Reservation</th>
+                <th>Passenger</th>
+                <th>Flight</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Model)
+            {
+                <tr>
+                    <td><code>@p.TransactionId</code></td>
+                    <td>#@p.ReservationId</td>
+                    <td>@p.Reservation?.Passenger?.FullName</td>
+                    <td>@p.Reservation?.FlightId</td>
+                    <td class="text-success fw-bold">$@p.Amount.ToString("F2")</td>
+                    <td>@p.Method</td>
+                    <td><small>@p.Date.ToString("dd MMM yyyy HH:mm")</small></td>
+                    <td>
+                        <span class="badge @(p.Status == "Completed" ? "bg-success" : "bg-warning text-dark")">
+                            @p.Status
+                        </span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot class="table-secondary">
+            <tr>
+                <td colspan="4" class="text-end fw-bold">Total Revenue:</td>
+                <td class="fw-bold text-success">$@total.ToString("F2")</td>
+                <td colspan="3"></td>
+            </tr>
+        </tfoot>
+    </table>
+</div>

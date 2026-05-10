@@ -1,0 +1,74 @@
+@model IEnumerable<FlightManagementSystem.Models.Reservation>
+@{
+    ViewData["Title"] = "My Reservations";
+}
+
+<h2>🎫 My Reservations</h2>
+<hr />
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        You have no reservations yet.
+        <a asp-controller="Flight" asp-action="Index" class="alert-link">Search for flights</a> to book one.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover shadow-sm align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Booking #</th>
+                    <th>Flight</th>
+                    <th>Route</th>
+                    <th>Departure</th>
+                    <th>Class</th>
+                    <th>Status</th>
+                    <th>Payment</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model)
+                {
+                    <tr class="@(r.Status == "Cancelled" ? "table-secondary text-muted" : "")">
+                        <td>#@r.Id</td>
+                        <td><strong>@r.FlightId</strong></td>
+                        <td>@r.Flight?.Source → @r.Flight?.Destination</td>
+                        <td>@r.Flight?.DepartureTime.ToString("dd MMM yyyy HH:mm")</td>
+                        <td>@r.ClassType</td>
+                        <td>
+                            <span class="badge @(r.Status == "Confirmed" ? "bg-success" : "bg-secondary")">
+                                @r.Status
+                            </span>
+                        </td>
+                        <td>
+                            @if (r.Payment != null)
+                            {
+                                <span class="badge bg-success">Paid $@r.Payment.Amount.ToString("F2")</span>
+                            }
+                            else if (r.Status == "Confirmed")
+                            {
+                                <a asp-controller="Payment" asp-action="Payment"
+                                   asp-route-reservationId="@r.Id"
+                                   class="btn btn-sm btn-warning">Pay Now</a>
+                            }
+                        </td>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@r.Id"
+                               class="btn btn-sm btn-outline-primary me-1">View</a>
+                            @if (r.Status == "Confirmed")
+                            {
+                                <a asp-action="Cancel" asp-route-id="@r.Id"
+                                   class="btn btn-sm btn-outline-danger">Cancel</a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<a asp-controller="Flight" asp-action="Index" class="btn btn-primary mt-2">Search More Flights</a>

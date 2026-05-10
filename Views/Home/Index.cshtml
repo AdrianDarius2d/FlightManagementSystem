@@ -1,31 +1,90 @@
-﻿@{
+@{
     ViewData["Title"] = "Home";
 }
 
-<div class="text-center py-5">
-    <h1 class="display-4 fw-bold">✈️ Flight Management System</h1>
-    <p class="lead text-muted">Search and book flights quickly and easily.</p>
-    <a asp-controller="Flight" asp-action="Index" class="btn btn-primary btn-lg mt-3">Search Flights</a>
+<div class="py-5 mb-4 rounded-3 text-white text-center"
+     style="background: linear-gradient(135deg, #0d1b2a 0%, #1b4f8a 60%, #0d6efd 100%);">
+    <div class="py-4">
+        <h1 class="display-4 fw-bold">✈️ Bermuda Triangle Airlines</h1>
+        <p class="lead mb-4 opacity-75">Search and book flights quickly and easily.</p>
+
+        <form asp-controller="Flight" asp-action="Index" method="get"
+              class="d-flex flex-wrap gap-2 justify-content-center px-3">
+            <input type="text" name="source" class="form-control w-auto" placeholder="From" style="min-width:160px" />
+            <input type="text" name="destination" class="form-control w-auto" placeholder="To" style="min-width:160px" />
+            <input type="date" name="date" class="form-control w-auto" />
+            <button type="submit" class="btn btn-warning fw-bold px-4">🔍 Search Flights</button>
+        </form>
+    </div>
 </div>
 
-<hr />
+<div class="row g-4 text-center mb-5">
+    <div class="col-md-3">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body">
+                <div class="fs-1 mb-2">🔍</div>
+                <h5 class="card-title">Search Flights</h5>
+                <p class="card-text text-muted">Find flights by origin, destination, or date with real-time availability.</p>
+                <a asp-controller="Flight" asp-action="Index" class="btn btn-outline-primary btn-sm">Search Now</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body">
+                <div class="fs-1 mb-2">🎫</div>
+                <h5 class="card-title">Book a Seat</h5>
+                <p class="card-text text-muted">Reserve your seat in Economy, Business, or First Class in minutes.</p>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-controller="Flight" asp-action="Index" class="btn btn-outline-primary btn-sm">Book Now</a>
+                }
+                else
+                {
+                    <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-outline-primary btn-sm">Register to Book</a>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body">
+                <div class="fs-1 mb-2">💳</div>
+                <h5 class="card-title">Secure Payment</h5>
+                <p class="card-text text-muted">Pay by Credit Card, Debit Card, PayPal, or Bank Transfer.</p>
+                <a asp-controller="Home" asp-action="Privacy" class="btn btn-outline-secondary btn-sm">Learn More</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body">
+                <div class="fs-1 mb-2">📋</div>
+                <h5 class="card-title">Manage Bookings</h5>
+                <p class="card-text text-muted">View, modify, or cancel your reservations anytime from your account.</p>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-controller="Reservation" asp-action="Index" class="btn btn-outline-primary btn-sm">My Bookings</a>
+                }
+                else
+                {
+                    <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-primary btn-sm">Sign In</a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
 
-<div class="row text-center mt-4">
-    <div class="col-md-4">
-        <div class="card p-4 mb-3">
-            <h3>✈️</h3>
-            <h5>Search Flights</h5>
-            <p class="text-muted">Find available flights by origin, destination and date.</p>
-            <a asp-controller="Flight" asp-action="Index" class="btn btn-outline-primary">Search Now</a>
+@if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+{
+    <div class="alert alert-dark d-flex justify-content-between align-items-center">
+        <span>🛠️ You are signed in as <strong>@(User.IsInRole("Admin") ? "Admin" : "Staff")</strong>.</span>
+        <div class="d-flex gap-2">
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-controller="Admin" asp-action="Index" class="btn btn-sm btn-outline-light">Dashboard</a>
+            }
+            <a asp-controller="Flight" asp-action="Create" class="btn btn-sm btn-success">Add Flight</a>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card p-4 mb-3">
-            <h3>🎫</h3>
-            <h5>Book a Seat</h5>
-            <p class="text-muted">Reserve your seat and complete your booking in minutes.</p>
-            <a asp-controller="Flight" asp-action="Index" class="btn btn-outline-primary">Book Now</a>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card p-4 mb-
+}

@@ -1,0 +1,171 @@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    var maintenanceMode = (bool)(ViewBag.MaintenanceMode ?? false);
+    var errorCount = (int)(ViewBag.UnacknowledgedErrors ?? 0);
+    var latestBackup = ViewBag.LatestBackup as FlightManagementSystem.Models.BackupRecord;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>🛠️ Admin Dashboard</h2>
+    <small class="text-muted">@DateTime.Now.ToString("dddd, dd MMMM yyyy HH:mm")</small>
+</div>
+
+@if (maintenanceMode)
+{
+    <div class="alert alert-warning d-flex justify-content-between align-items-center">
+        <span>🔧 <strong>Maintenance mode is active.</strong> Regular users see a maintenance notice.</span>
+        <form asp-action="ToggleMaintenanceMode" method="post" class="mb-0">
+            <button type="submit" class="btn btn-sm btn-success">Disable Maintenance</button>
+        </form>
+    </div>
+}
+
+@if (errorCount > 0)
+{
+    <div class="alert alert-danger d-flex justify-content-between align-items-center">
+        <span>🚨 <strong>@errorCount unacknowledged system error(s)</strong> require your attention.</span>
+        <a asp-action="ErrorLogs" class="btn btn-sm btn-danger">View Error Logs</a>
+    </div>
+}
+
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm border-primary h-100">
+            <div class="card-body text-center">
+                <div class="fs-1 text-primary">✈️</div>
+                <h3 class="fw-bold">@ViewBag.TotalFlights</h3>
+                <p class="text-muted mb-0">Total Flights</p>
+                <small>@ViewBag.FlightsToday today</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-success h-100">
+            <div class="card-body text-center">
+                <div class="fs-1 text-success">🎫</div>
+                <h3 class="fw-bold">@ViewBag.ActiveReservations</h3>
+                <p class="text-muted mb-0">Active Reservations</p>
+                <small>@ViewBag.TotalReservations total</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-info h-100">
+            <div class="card-body text-center">
+                <div class="fs-1 text-info">👤</div>
+                <h3 class="fw-bold">@ViewBag.TotalPassengers</h3>
+                <p class="text-muted mb-0">Passengers</p>
+                <small>Registered profiles</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm border-warning h-100">
+            <div class="card-body text-center">
+                <div class="fs-1 text-warning">💰</div>
+                <h3 class="fw-bold">$@((ViewBag.TotalRevenue as decimal? ?? 0).ToString("N0"))</h3>
+                <p class="text-muted mb-0">Total Revenue</p>
+                <small>Completed payments</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions Grid -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-dark text-white">Quick Actions</div>
+    <div class="card-body">
+        <div class="row g-2">
+            <div class="col-md-6">
+                <p class="fw-semibold mb-2">✈️ Flight & Reservations</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a asp-controller="Flight" asp-action="Create" class="btn btn-success btn-sm">Add Flight</a>
+                    <a asp-controller="Reservation" asp-action="All" class="btn btn-primary btn-sm">All Reservations</a>
+                    <a asp-controller="Payment" asp-action="AllTransactions" class="btn btn-warning btn-sm">Transactions</a>
+                    <a asp-controller="Passenger" asp-action="Index" class="btn btn-info btn-sm text-white">Passengers</a>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <p class="fw-semibold mb-2">🛠️ Administration</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a asp-action="Users" class="btn btn-secondary btn-sm">Users &amp; Roles</a>
+                    <a asp-action="Reports" class="btn btn-outline-dark btn-sm">Reports</a>
+                    <a asp-action="ActivityLogs" class="btn btn-outline-secondary btn-sm">Audit Logs</a>
+                    <a asp-action="ErrorLogs" class="btn btn-outline-danger btn-sm">Error Logs @(errorCount > 0 ? $"({errorCount})" : "")</a>
+                    <a asp-action="Backup" class="btn btn-outline-primary btn-sm">Backups</a>
+                    <a asp-action="Settings" class="btn btn-outline-secondary btn-sm">Settings</a>
+                    <a asp-action="SystemHealth" class="btn btn-outline-success btn-sm">Health Report</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Row -->
+<div class="row g-3">
+    <!-- Recent Activity Log -->
+    <div class="col-md-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white d-flex justify-content-between">
+                <span>📋 Recent Activity (REQ-63)</span>
+                <a asp-action="ActivityLogs" class="btn btn-sm btn-outline-light">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead class="table-light">
+                        <tr><th>Time</th><th>User</th><th>Action</th><th>Description</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var log in (ViewBag.RecentActivityLogs as IEnumerable<FlightManagementSystem.Models.ActivityLog> ?? new List<FlightManagementSystem.Models.ActivityLog>()))
+                        {
+                            <tr>
+                                <td><small class="text-muted">@log.Timestamp.ToString("HH:mm:ss")</small></td>
+                                <td><small>@(log.UserEmail ?? "System")</small></td>
+                                <td><span class="badge bg-secondary">@log.Action</span></td>
+                                <td><small>@log.Description</small></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right column -->
+    <div class="col-md-5">
+        <!-- Backup quick status -->
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-dark text-white">🗄️ Backup Status (REQ-54)</div>
+            <div class="card-body">
+                @if (latestBackup != null)
+                {
+                    <p class="mb-1"><small><strong>Last backup:</strong> @latestBackup.CompletedAt?.ToString("dd MMM yyyy HH:mm")</small></p>
+                    <p class="mb-2"><small><strong>File:</strong> @latestBackup.FileName</small></p>
+                }
+                else
+                {
+                    <p class="text-warning mb-2"><small>No backups recorded yet.</small></p>
+                }
+                <div class="d-flex gap-2">
+                    <form asp-action="CreateBackup" method="post">
+                        <button type="submit" class="btn btn-success btn-sm">Back Up Now</button>
+                    </form>
+                    <a asp-action="Backup" class="btn btn-outline-secondary btn-sm">History</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Alert Broadcaster -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning text-dark">📢 Broadcast Alert (REQ-52)</div>
+            <div class="card-body">
+                <form asp-action="SendSystemAlert" method="post">
+                    <textarea name="message" class="form-control mb-2" rows="3"
+                              placeholder="Message to all users..."></textarea>
+                    <button type="submit" class="btn btn-warning w-100 btn-sm">Send to All Users</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

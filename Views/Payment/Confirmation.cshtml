@@ -1,0 +1,88 @@
+@model FlightManagementSystem.Models.Reservation
+@{
+    ViewData["Title"] = "Booking Confirmed";
+    var payment = ViewBag.Payment as FlightManagementSystem.Models.Payment;
+}
+
+<div class="text-center py-4">
+    <div class="display-1 mb-3">✅</div>
+    <h1 class="text-success">Booking Confirmed!</h1>
+    <p class="lead text-muted">Your reservation has been successfully paid. Have a great flight!</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow border-success">
+            <div class="card-header bg-success text-white text-center">
+                <h5 class="mb-0">✈️ E-Ticket — Reservation #@Model.Id</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-muted text-uppercase">Passenger</h6>
+                        <p class="fs-5 fw-bold">@Model.Passenger?.FullName</p>
+                        <p>@Model.Passenger?.Email</p>
+                        <p>Passport: @Model.Passenger?.PassportId</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <h6 class="text-muted text-uppercase">Flight</h6>
+                        <p class="fs-5 fw-bold">@Model.FlightId</p>
+                        <p>@Model.ClassType Class</p>
+                        @if (Model.Ticket != null)
+                        {
+                            <p>Seat: <strong>@Model.Ticket.SeatNumber</strong></p>
+                        }
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="row text-center my-3">
+                    <div class="col-5">
+                        <p class="text-muted small">FROM</p>
+                        <p class="fs-4 fw-bold">@Model.Flight?.Source</p>
+                        <p>@Model.Flight?.DepartureTime.ToString("HH:mm")</p>
+                        <p class="text-muted small">@Model.Flight?.DepartureTime.ToString("dd MMM yyyy")</p>
+                    </div>
+                    <div class="col-2 d-flex align-items-center justify-content-center">
+                        <span class="fs-3">✈️</span>
+                    </div>
+                    <div class="col-5">
+                        <p class="text-muted small">TO</p>
+                        <p class="fs-4 fw-bold">@Model.Flight?.Destination</p>
+                        <p>@Model.Flight?.ArrivalTime.ToString("HH:mm")</p>
+                        <p class="text-muted small">@Model.Flight?.ArrivalTime.ToString("dd MMM yyyy")</p>
+                    </div>
+                </div>
+
+                <hr />
+
+                @if (payment != null)
+                {
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted">Amount Paid</small>
+                            <p class="fw-bold text-success fs-5">$@payment.Amount.ToString("F2")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">Payment Method</small>
+                            <p class="fw-bold">@payment.Method</p>
+                        </div>
+                        <div class="col-12">
+                            <small class="text-muted">Transaction ID</small>
+                            <p><code class="fs-6">@payment.TransactionId</code></p>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="card-footer text-center text-muted small">
+                Bermuda Triangle Airlines · support@bermudatriangle.com · Thank you for flying with us!
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-center gap-3 mt-4">
+            <a asp-controller="Reservation" asp-action="Index" class="btn btn-outline-primary">My Bookings</a>
+            <a asp-controller="Flight" asp-action="Index" class="btn btn-outline-secondary">Search More Flights</a>
+        </div>
+    </div>
+</div>

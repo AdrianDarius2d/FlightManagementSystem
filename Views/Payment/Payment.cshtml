@@ -1,0 +1,97 @@
+@model FlightManagementSystem.Models.Reservation
+@{
+    ViewData["Title"] = "Payment";
+    var amount = (decimal)ViewBag.Amount;
+}
+
+<h2>💳 Complete Payment</h2>
+<hr />
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-dark text-white">Order Summary</div>
+            <div class="card-body">
+                <p><strong>Reservation:</strong> #@Model.Id</p>
+                <p><strong>Flight:</strong> @Model.FlightId</p>
+                <p><strong>Route:</strong> @Model.Flight?.Source → @Model.Flight?.Destination</p>
+                <p><strong>Departure:</strong> @Model.Flight?.DepartureTime.ToString("dd MMM yyyy HH:mm")</p>
+                <p><strong>Class:</strong> @Model.ClassType</p>
+                <p><strong>Passenger:</strong> @Model.Passenger?.FullName</p>
+                <hr />
+                <p class="fs-5"><strong>Total:</strong>
+                    <span class="text-success fw-bold">$@amount.ToString("F2")</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">Payment Details</div>
+            <div class="card-body">
+                <form asp-action="Payment" method="post">
+                    <input type="hidden" name="reservationId" value="@Model.Id" />
+                    <input type="hidden" name="amount" value="@amount" />
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Select Payment Method</label>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <input type="radio" class="btn-check" name="method" id="cc" value="Credit Card" checked />
+                                <label class="btn btn-outline-primary w-100" for="cc">
+                                    💳 Credit Card
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <input type="radio" class="btn-check" name="method" id="debit" value="Debit Card" />
+                                <label class="btn btn-outline-primary w-100" for="debit">
+                                    🏦 Debit Card
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <input type="radio" class="btn-check" name="method" id="paypal" value="PayPal" />
+                                <label class="btn btn-outline-primary w-100" for="paypal">
+                                    🅿️ PayPal
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <input type="radio" class="btn-check" name="method" id="bank" value="Bank Transfer" />
+                                <label class="btn btn-outline-primary w-100" for="bank">
+                                    🏛️ Bank Transfer
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="cardFields">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Card Number</label>
+                            <input type="text" class="form-control" placeholder="1234 5678 9012 3456" maxlength="19" />
+                            <small class="text-muted">(Demo – no real payment is processed)</small>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Expiry Date</label>
+                                <input type="text" class="form-control" placeholder="MM/YY" maxlength="5" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">CVV</label>
+                                <input type="text" class="form-control" placeholder="123" maxlength="3" />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Cardholder Name</label>
+                            <input type="text" class="form-control" value="@Model.Passenger?.FullName" />
+                        </div>
+                    </div>
+
+                    <hr />
+                    <button type="submit" class="btn btn-success btn-lg w-100">
+                        ✅ Pay $@amount.ToString("F2")
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
