@@ -1,0 +1,27 @@
+@model FlightManagementSystem.Models.Reservation
+@{
+    ViewData["Title"] = "Cancel Reservation";
+}
+
+<div class="alert alert-warning">
+    <h4>⚠️ Cancel Reservation #@Model.Id?</h4>
+    <p>Are you sure you want to cancel this booking? This action cannot be undone.</p>
+</div>
+
+<div class="card shadow-sm" style="max-width: 500px">
+    <div class="card-body">
+        <p><strong>Flight:</strong> @Model.FlightId</p>
+        <p><strong>Route:</strong> @Model.Flight?.Source → @Model.Flight?.Destination</p>
+        <p><strong>Departure:</strong> @Model.Flight?.DepartureTime.ToString("dd MMM yyyy HH:mm")</p>
+        <p><strong>Class:</strong> @Model.ClassType</p>
+        @if (Model.Payment != null)
+        {
+            <p class="text-warning"><strong>Note:</strong> Payment of $@Model.Payment.Amount.ToString("F2") will not be automatically refunded.</p>
+        }
+    </div>
+</div>
+
+<form asp-action="Cancel" method="post" class="mt-3 d-flex gap-2">
+    <button type="submit" class="btn btn-danger">Yes, Cancel Booking</button>
+    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">Keep Reservation</a>
+</form>

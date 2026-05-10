@@ -1,0 +1,74 @@
+@model IEnumerable<FlightManagementSystem.Models.SystemSetting>
+@{
+    ViewData["Title"] = "System Settings";
+    var grouped = Model.GroupBy(s => s.Category).OrderBy(g => g.Key);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>⚙️ System Settings</h2>
+    <small class="text-muted">REQ-65 (parameters), REQ-72 (security), REQ-76 (changes logged)</small>
+</div>
+
+<div class="alert alert-info">
+    <strong>ℹ️ All changes are recorded in the audit log.</strong>
+    Modifying security settings takes effect after the next user session.
+</div>
+
+<form asp-action="Settings" method="post">
+    @foreach (var group in grouped)
+    {
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-dark text-white">
+                @(group.Key switch {
+                    "Security"      => "🔒 Security Policy (REQ-72)",
+                    "Backup"        => "🗄️ Backup Settings (REQ-54)",
+                    "Notifications" => "🔔 Notification Settings (REQ-52)",
+                    _               => "⚙️ General Settings"
+                })
+            </div>
+            <div class="card-body">
+                @foreach (var setting in group)
+                {
+                    <div class="mb-3 row">
+                        <label class="col-sm-3 col-form-label fw-semibold">
+                            @setting.DisplayName
+                        </label>
+                        <div class="col-sm-4">
+                            @if (setting.InputType == "boolean")
+                            {
+                                <select name="settings[@setting.Key]" class="form-select">
+                                    <option value="true" selected="@(setting.Value == "true")">Enabled</option>
+                                    <option value="false" selected="@(setting.Value == "false")">Disabled</option>
+                                </select>
+                            }
+                            else if (setting.InputType == "number")
+                            {
+                                <input type="number" name="settings[@setting.Key]"
+                                       class="form-control" value="@setting.Value" min="0" />
+                            }
+                            else
+                            {
+                                <input type="text" name="settings[@setting.Key]"
+                                       class="form-control" value="@setting.Value" />
+                            }
+                        </div>
+                        <div class="col-sm-5">
+                            <small class="text-muted">@setting.Description</small>
+                            @if (setting.LastUpdated != default)
+                            {
+                                <br /><small class="text-muted fst-italic">
+                                    Last updated: @setting.LastUpdated.ToString("dd MMM yyyy HH:mm")
+                                </small>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">💾 Save All Settings</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+</form>

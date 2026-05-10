@@ -1,31 +1,90 @@
 @model FlightManagementSystem.Models.Flight
-
 @{
-    ViewData["Title"] = "Flight Details";
+    ViewData["Title"] = "Flight Details – " + Model.FlightNumber;
 }
 
-<h2>Flight Details</h2>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Flight" asp-action="Index">Flights</a></li>
+        <li class="breadcrumb-item active">@Model.FlightNumber</li>
+    </ol>
+</nav>
 
-<div class="card p-4" style="max-width: 600px;">
-    <h4>Flight @Model.FlightNumber</h4>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-4">From</dt>
-        <dd class="col-sm-8">@Model.Source</dd>
+<div class="row">
+    <div class="col-md-7">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">✈️ Flight @Model.FlightNumber</h4>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">From</dt>
+                    <dd class="col-sm-8">@Model.Source</dd>
 
-        <dt class="col-sm-4">To</dt>
-        <dd class="col-sm-8">@Model.Destination</dd>
+                    <dt class="col-sm-4">To</dt>
+                    <dd class="col-sm-8">@Model.Destination</dd>
 
-        <dt class="col-sm-4">Departure</dt>
-        <dd class="col-sm-8">@Model.DepartureTime.ToString("dd MMM yyyy HH:mm")</dd>
+                    <dt class="col-sm-4">Departure</dt>
+                    <dd class="col-sm-8">@Model.DepartureTime.ToString("dddd, dd MMMM yyyy – HH:mm")</dd>
 
-        <dt class="col-sm-4">Arrival</dt>
-        <dd class="col-sm-8">@Model.ArrivalTime.ToString("dd MMM yyyy HH:mm")</dd>
+                    <dt class="col-sm-4">Arrival</dt>
+                    <dd class="col-sm-8">@Model.ArrivalTime.ToString("dddd, dd MMMM yyyy – HH:mm")</dd>
 
-        <dt class="col-sm-4">Capacity</dt>
-        <dd class="col-sm-8">@Model.Capacity seats</dd>
-    </dl>
+                    <dt class="col-sm-4">Aircraft</dt>
+                    <dd class="col-sm-8">@Model.AircraftType</dd>
 
-    <a asp-action="Index" class="btn btn-outline-secondary me-2">Back to Flights</a>
-    <a asp-controller="Reservation" asp-action="Create" asp-route-flightNumber="@Model.FlightNumber" class="btn btn-primary">Book This Flight</a>
+                    <dt class="col-sm-4">Status</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge @(Model.Status == "Scheduled" ? "bg-primary" : Model.Status == "Delayed" ? "bg-warning text-dark" : "bg-danger")">
+                            @Model.Status
+                        </span>
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body text-center">
+                <h5 class="card-title text-muted">Economy Class</h5>
+                <p class="display-5 fw-bold text-success">$@Model.Price.ToString("F2")</p>
+                <p class="text-muted">Business: <strong>$@((Model.Price * 2).ToString("F2"))</strong></p>
+                <p class="text-muted">First Class: <strong>$@((Model.Price * 3.5m).ToString("F2"))</strong></p>
+                <hr />
+                <p>
+                    <span class="badge @(Model.AvailableSeats > 10 ? "bg-success" : Model.AvailableSeats > 0 ? "bg-warning text-dark" : "bg-danger") fs-6">
+                        @Model.AvailableSeats seats available
+                    </span>
+                </p>
+
+                @if (User.Identity!.IsAuthenticated && Model.AvailableSeats > 0 && Model.Status != "Cancelled")
+                {
+                    <a asp-controller="Reservation" asp-action="Create"
+                       asp-route-flightNumber="@Model.FlightNumber"
+                       class="btn btn-primary btn-lg w-100 mt-2">Book This Flight</a>
+                }
+                else if (!User.Identity.IsAuthenticated)
+                {
+                    <a asp-area="Identity" asp-page="/Account/Login"
+                       class="btn btn-outline-primary btn-lg w-100 mt-2">Login to Book</a>
+                }
+                else if (Model.AvailableSeats == 0)
+                {
+                    <button class="btn btn-secondary btn-lg w-100 mt-2" disabled>Fully Booked</button>
+                }
+            </div>
+        </div>
+
+        @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+        {
+            <div class="d-flex gap-2">
+                <a asp-action="Edit" asp-route-id="@Model.FlightNumber" class="btn btn-outline-secondary flex-grow-1">Edit Flight</a>
+                <a asp-action="PassengerList" asp-route-id="@Model.FlightNumber" class="btn btn-outline-info flex-grow-1">Passenger List</a>
+                <a asp-action="Delete" asp-route-id="@Model.FlightNumber" class="btn btn-outline-danger flex-grow-1">Delete</a>
+            </div>
+        }
+    </div>
 </div>
+
+<a asp-action="Index" class="btn btn-outline-secondary">← Back to Flights</a>

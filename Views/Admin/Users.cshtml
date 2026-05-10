@@ -1,0 +1,88 @@
+@using Microsoft.AspNetCore.Identity
+@model IEnumerable<IdentityUser>
+@{
+    ViewData["Title"] = "User Management";
+    var userRoles = ViewBag.UserRoles as Dictionary<string, IList<string>>;
+    var availableRoles = ViewBag.AvailableRoles as List<string>;
+}
+
+<h2>👥 User Management</h2>
+<p class="text-muted">Manage system accounts, roles, and access control.</p>
+<hr />
+
+<div class="table-responsive">
+    <table class="table table-hover shadow-sm align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Locked Out</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                var roles = userRoles?.GetValueOrDefault(user.Id) ?? new List<string>();
+                var isLocked = user.LockoutEnd.HasValue && user.LockoutEnd > DateTimeOffset.UtcNow;
+
+                <tr class="@(isLocked ? "table-secondary" : "")">
+                    <td>
+                        @user.Email
+                        @if (isLocked)
+                        {
+                            <span class="badge bg-danger ms-1">Locked</span>
+                        }
+                    </td>
+                    <td>
+                        @foreach (var role in roles)
+                        {
+                            <span class="badge @(role == "Admin" ? "bg-danger" : role == "Staff" ? "bg-warning text-dark" : "bg-primary") me-1">
+                                @role
+                            </span>
+                        }
+                        @if (!roles.Any())
+                        {
+                            <span class="text-muted">–</span>
+                        }
+                    </td>
+                    <td>@(isLocked ? "Yes" : "No")</td>
+                    <td>
+                        <div class="d-flex flex-wrap gap-1">
+                            <!-- Assign Role -->
+                            <form asp-action="AssignRole" method="post" class="d-inline">
+                                <input type="hidden" name="userId" value="@user.Id" />
+                                <select name="role" class="form-select form-select-sm d-inline-block" style="width:auto">
+                                    @foreach (var r in availableRoles ?? new())
+                                    {
+                                        <option value="@r">@r</option>
+                                    }
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">Set Role</button>
+                            </form>
+
+                            <!-- Lock / Unlock -->
+                            <form asp-action="ToggleUserLock" method="post" class="d-inline">
+                                <input type="hidden" name="userId" value="@user.Id" />
+                                <button type="submit"
+                                        class="btn btn-sm @(isLocked ? "btn-outline-success" : "btn-outline-warning")">
+                                    @(isLocked ? "Unlock" : "Lock")
+                                </button>
+                            </form>
+
+                            <!-- Reset Password -->
+                            <form asp-action="ResetPassword" method="post" class="d-inline">
+                                <input type="hidden" name="userId" value="@user.Id" />
+                                <input type="text" name="newPassword" class="form-control form-control-sm d-inline-block"
+                                       style="width:120px" placeholder="New password" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Reset Pwd</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<a asp-action="Index" class="btn btn-outline-secondary mt-2">← Dashboard</a>

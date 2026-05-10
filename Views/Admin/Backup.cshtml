@@ -1,0 +1,140 @@
+@model IEnumerable<FlightManagementSystem.Models.BackupRecord>
+@{
+    ViewData["Title"] = "Backup Management";
+    var latest = ViewBag.LatestBackup as FlightManagementSystem.Models.BackupRecord;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>🗄️ Backup Management</h2>
+    <small class="text-muted">REQ-54 to REQ-61</small>
+</div>
+
+<!-- Status Banner -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm @(latest != null ? "border-success" : "border-warning") h-100">
+            <div class="card-body">
+                <h6 class="text-muted">Last Successful Backup</h6>
+                @if (latest != null)
+                {
+                    <p class="fw-bold text-success mb-0">@latest.FileName</p>
+                    <small class="text-muted">@latest.CompletedAt?.ToString("dd MMM yyyy HH:mm")</small>
+                    <br /><small class="text-muted">Size: @((latest.FileSizeBytes / 1024.0).ToString("F1")) KB</small>
+                }
+                else
+                {
+                    <p class="text-warning fw-bold mb-0">No backups yet</p>
+                    <small class="text-muted">Run a manual backup now.</small>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Total Backups</h6>
+                <h3 class="fw-bold">@Model.Count()</h3>
+                <small class="text-muted">
+                    @Model.Count(b => b.Status == "Success") succeeded,
+                    @Model.Count(b => b.Status == "Failed") failed
+                </small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100 d-flex align-items-center justify-content-center">
+            <div class="card-body text-center">
+                <h6 class="text-muted mb-3">Manual Backup (REQ-55)</h6>
+                <form asp-action="CreateBackup" method="post">
+                    <button type="submit" class="btn btn-success btn-lg">
+                        🗄️ Back Up Now
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Backup History -->
+<h5>Backup History <small class="text-muted fs-6">(REQ-59 — all backup activities are logged)</small></h5>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No backups recorded yet. Click "Back Up Now" to create the first backup.</div>
+}
+else
+{
+    <div class="table-responsive shadow-sm">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>File Name</th>
+                    <th>Type</th>
+                    <th>Started</th>
+                    <th>Completed</th>
+                    <th>Size</th>
+                    <th>Status</th>
+                    <th>Integrity</th>
+                    <th>Notes</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var b in Model)
+                {
+                    <tr>
+                        <td>@b.Id</td>
+                        <td><code>@b.FileName</code></td>
+                        <td>
+                            <span class="badge @(b.Type == "Manual" ? "bg-primary" : "bg-secondary")">
+                                @b.Type
+                            </span>
+                        </td>
+                        <td><small>@b.StartedAt.ToString("dd MMM yyyy HH:mm")</small></td>
+                        <td><small>@(b.CompletedAt?.ToString("dd MMM yyyy HH:mm") ?? "—")</small></td>
+                        <td><small>@(b.FileSizeBytes > 0 ? (b.FileSizeBytes / 1024.0).ToString("F1") + " KB" : "—")</small></td>
+                        <td>
+                            <span class="badge @(b.Status == "Success" ? "bg-success" : b.Status == "InProgress" ? "bg-warning text-dark" : "bg-danger")">
+                                @b.Status
+                            </span>
+                        </td>
+                        <td>
+                            @if (b.IntegrityVerified)
+                            {
+                                <span class="text-success fw-bold">✔ Verified</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Unverified</span>
+                            }
+                        </td>
+                        <td><small class="text-muted">@b.Notes</small></td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                @if (b.Status == "Success")
+                                {
+                                    <!-- REQ-58: Verify integrity -->
+                                    <form asp-action="VerifyBackup" method="post" class="d-inline">
+                                        <input type="hidden" name="id" value="@b.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-info" title="Verify (REQ-58)">🔍</button>
+                                    </form>
+                                    <!-- REQ-57: Restore -->
+                                    <form asp-action="RestoreBackup" method="post" class="d-inline"
+                                          onsubmit="return confirm('Restore from this backup? This cannot be undone.')">
+                                        <input type="hidden" name="id" value="@b.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-warning" title="Restore (REQ-57)">↩️</button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<div class="mt-3">
+    <a asp-action="Index" class="btn btn-outline-secondary">← Dashboard</a>
+</div>

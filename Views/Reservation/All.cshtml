@@ -1,0 +1,63 @@
+@model IEnumerable<FlightManagementSystem.Models.Reservation>
+@{
+    ViewData["Title"] = "All Reservations";
+}
+
+<h2>📋 All Reservations</h2>
+<p class="text-muted">Total: @Model.Count() | Confirmed: @Model.Count(r => r.Status == "Confirmed") | Cancelled: @Model.Count(r => r.Status == "Cancelled")</p>
+<hr />
+
+<div class="table-responsive">
+    <table class="table table-hover shadow-sm align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>#</th>
+                <th>Passenger</th>
+                <th>Flight</th>
+                <th>Route</th>
+                <th>Booked</th>
+                <th>Class</th>
+                <th>Status</th>
+                <th>Payment</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in Model)
+            {
+                <tr class="@(r.Status == "Cancelled" ? "table-secondary text-muted" : "")">
+                    <td>#@r.Id</td>
+                    <td>@r.Passenger?.FullName</td>
+                    <td><strong>@r.FlightId</strong></td>
+                    <td>@r.Flight?.Source → @r.Flight?.Destination</td>
+                    <td><small>@r.Date.ToString("dd MMM yyyy")</small></td>
+                    <td>@r.ClassType</td>
+                    <td>
+                        <span class="badge @(r.Status == "Confirmed" ? "bg-success" : "bg-secondary")">
+                            @r.Status
+                        </span>
+                    </td>
+                    <td>
+                        @if (r.Payment != null)
+                        {
+                            <small class="text-success">$@r.Payment.Amount.ToString("F2") via @r.Payment.Method</small>
+                        }
+                        else
+                        {
+                            <small class="text-warning">Unpaid</small>
+                        }
+                    </td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@r.Id"
+                           class="btn btn-sm btn-outline-primary me-1">View</a>
+                        @if (r.Status == "Confirmed")
+                        {
+                            <a asp-action="Cancel" asp-route-id="@r.Id"
+                               class="btn btn-sm btn-outline-danger">Cancel</a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
